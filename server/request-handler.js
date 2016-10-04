@@ -42,7 +42,19 @@ fs.readFile('server/input.txt', function(err, data) {
   cache = result;
 });
 
+// var readableStream = fs.createReadStream('abc2.txt');
+// var writableStream = fs.createWriteStream('abc3.txt');
 var requestHandler = function(request, response) {
+  // var data = '';
+  // readableStream.on('data', function(chunk) {
+  //   data += chunk;
+  // });
+
+  // readableStream.on('end', function() {
+  //   console.log(data);
+  // });
+
+  // readableStream.pipe(writableStream);
   // Request and Response come from node's http module.
   //
   // They include information about both the incoming request, such as
