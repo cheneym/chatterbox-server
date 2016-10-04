@@ -51,12 +51,13 @@ var requestHandler = function(request, response) {
 
   if (request.url !== '/classes/messages') {
     statusCode = 404;
-    headers['Content-Type'] = 'text/JSON';
+    headers['Content-Type'] = 'application/json';
     response.writeHead(statusCode, headers);
     response.end('Invalid URL');
+
   } else if (request.method === 'GET') {
     statusCode = 200;
-    headers['Content-Type'] = 'text/JSON';
+    headers['Content-Type'] = 'application/json';
     response.writeHead(statusCode, headers);
     var result;
     var data = fs.readFileSync('server/input.txt');
@@ -64,20 +65,21 @@ var requestHandler = function(request, response) {
     obj.results = JSON.parse(data.toString()).reverse();
     result = JSON.stringify(obj);
     response.end(result);
+
   } else if (request.method === 'POST') {
     statusCode = 201;
-    headers['Content-Type'] = 'text/JSON';
+    headers['Content-Type'] = 'application/json';
     request.on('data', function(newData) {
-      fs.readFile('server/input.txt', function(error, oldData) {
-        fs.writeFile('server/input.txt', oldData.toString().slice(0, -1) + ',' + newData.toString() + ']');
-      });
+      var oldData = fs.readFileSync('server/input.txt');
+      fs.writeFileSync('server/input.txt', oldData.toString().slice(0, -1) + ',' + newData.toString() + ']');
     });
 
-    request.on('end', function(data) {
+    // request.on('end', function(data) {
+    //   console.log('ended');
+    // });
 
-    });
     response.writeHead(statusCode, headers);
-    response.end('post received');
+    response.end('testing');
   }
 
   console.log('Serving request type ' + request.method + ' for url ' + request.url);
@@ -106,4 +108,7 @@ var requestHandler = function(request, response) {
 };
 
 
-module.exports = requestHandler;
+// module.exports = requestHandler;
+module.exports.requestHandler = requestHandler;
+
+
