@@ -32,7 +32,14 @@ var defaultCorsHeaders = {
 
 var fs = require('fs');
 
-var cache = [];
+var cache;
+
+fs.readFile('server/input.txt', function(err, data) {
+  if (err) { console.error(err); }
+
+  var result = JSON.parse(data.toString());
+  cache = result;
+});
 
 var requestHandler = function(request, response) {
   // Request and Response come from node's http module.
@@ -53,59 +60,40 @@ var requestHandler = function(request, response) {
   headers['Content-Type'] = 'application/json';
   var statusCode = 200;
   var requestType = request.method;
-  if (request.method === 'OPTIONS') {
-    requestType = request.headers['access-control-request-method'];
-  }
 
   if (request.url !== '/classes/messages') {
     statusCode = 404;
     response.writeHead(statusCode, headers);
     response.end('Invalid URL');
 
+  } else if (requestType === 'OPTIONS') {
+    statusCode = 200;
+    response.writeHead(statusCode, headers);
+    response.end();
+
   } else if (requestType === 'GET') {
     statusCode = 200;
     response.writeHead(statusCode, headers);
-
-    fs.readFile('server/input.txt', function(err, data) {
-      var obj = {};
-      var result = JSON.parse(data.toString());
-      // result = JSON.stringify(obj);
-      obj.results = result;
-      response.end(JSON.stringify(obj));
-    });
-    
+    var data = {};
+    data.results = cache;
+    response.end(JSON.stringify(data));
   } else if (requestType === 'POST') {
     statusCode = 201;
     response.writeHead(statusCode, headers);
 
     request.on('data', function(newData) {
-      fs.readFile('server/input.txt', function(err, data) {
-        // turn data into a manipulatable format
-        var content = JSON.parse(data.toString());
-        var newContent = JSON.parse(newData.toString());
-        // manipulate the data, i.e. insert the POST newData
-        content.unshift(newContent);
-          // convert the data back into txt format
-          // write the transformed data
-        fs.writeFile('server/input.txt', JSON.stringify(content));
-      });
-    //   var oldArray = JSON.parse(oldData.toString());
-    //   var newObj = JSON.parse(newData.toString());
-    //   newObj.objectId = oldArray.length.toString();
-    //   oldArray.unshift(newObj);
-    //   var resultString = JSON.stringify(oldArray);
-
-
-    //   fs.writeFileSync('server/input.txt', resultString);
+      var newContent = JSON.parse(newData.toString());
+      cache.unshift(newContent);
+      fs.writeFile('server/input.txt', JSON.stringify(cache)); 
     });
+
     request.on('end', function(data) {
       console.log('ended');
       response.end('data modifed');
     });
   }
 
-
-  console.log('Serving request type ' + requestType + ' for url ' + request.url);
+  console.log('Serving request type ' + request.method + ' for url ' + request.url);
 
   // The outgoing status.
 
@@ -133,5 +121,3 @@ var requestHandler = function(request, response) {
 
 // module.exports = requestHandler;
 module.exports.requestHandler = requestHandler;
-
-
