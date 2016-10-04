@@ -6,7 +6,7 @@ var app = {
   server: 'http://127.0.0.1:3000/classes/messages',
   username: 'anonymous',
   roomname: 'lobby',
-  lastMessageId: 0,
+  lastMessageId: -1,
   friends: {},
   messages: [],
 
@@ -37,7 +37,6 @@ var app = {
 
   send: function(message) {
     app.startSpinner();
-
     // POST the message to the server
     $.ajax({
       url: app.server,
@@ -46,7 +45,6 @@ var app = {
       success: function (data) {
         // Clear messages input
         app.$message.val('');
-
         // Trigger a fetch to update the messages, pass true to animate
         app.fetch();
       },
@@ -65,15 +63,16 @@ var app = {
       success: function(data) {
         // Don't bother if we have nothing to work with
         if (!data.results || !data.results.length) { return; }
-
         // Store messages for caching later
         app.messages = data.results;
-        console.log(data.results);
+
         // Get the last message
         var mostRecentMessage = data.results[data.results.length - 1];
-
+        console.log('mostrecentmessage', mostRecentMessage);
+        console.log('app.lastMessageId', app.lastMessageId);
         // Only bother updating the DOM if we have a new message
-        if (mostRecentMessage.objectId !== app.lastMessageId) {
+        // if (mostRecentMessage.objectId !== app.lastMessageId) {
+        if (true) {
           // Update the UI with the fetched rooms
           app.renderRoomList(data.results);
 

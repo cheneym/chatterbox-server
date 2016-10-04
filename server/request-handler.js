@@ -47,42 +47,49 @@ var requestHandler = function(request, response) {
   // debugging help, but you should always be careful about leaving stray
   // console.logs in your code.
   var headers = defaultCorsHeaders;
+  headers['Content-Type'] = 'application/json';
   var statusCode = 200;
+  var requestType = request.method;
+  if (request.method === 'OPTIONS') {
+    requestType = request.headers['access-control-request-method'];
+  }
 
   if (request.url !== '/classes/messages') {
     statusCode = 404;
-    headers['Content-Type'] = 'application/json';
     response.writeHead(statusCode, headers);
     response.end('Invalid URL');
 
-  } else if (request.method === 'GET') {
+  } else if (requestType === 'GET') {
     statusCode = 200;
-    headers['Content-Type'] = 'application/json';
     response.writeHead(statusCode, headers);
     var result;
     var data = fs.readFileSync('server/input.txt');
     var obj = {};
-    obj.results = JSON.parse(data.toString()).reverse();
+    obj.results = JSON.parse(data.toString());
     result = JSON.stringify(obj);
     response.end(result);
-
-  } else if (request.method === 'POST') {
+  } else if (requestType === 'POST') {
     statusCode = 201;
-    headers['Content-Type'] = 'application/json';
     request.on('data', function(newData) {
       var oldData = fs.readFileSync('server/input.txt');
-      fs.writeFileSync('server/input.txt', oldData.toString().slice(0, -1) + ',' + newData.toString() + ']');
+      var oldArray = JSON.parse(oldData.toString());
+      var newObj = JSON.parse(newData.toString());
+      newObj.objectId = oldArray.length.toString();
+      // resultString = oldData.toString().slice(0, -1) + ',' + newData.toString() + ']';
+      oldArray.unshift(newObj);
+      var resultString = JSON.stringify(oldArray);
+      fs.writeFileSync('server/input.txt', resultString);
+    });
+    request.on('end', function(data) {
+      console.log('ended');
     });
 
-    // request.on('end', function(data) {
-    //   console.log('ended');
-    // });
-
     response.writeHead(statusCode, headers);
-    response.end('testing');
+    response.end('123');
   }
 
-  console.log('Serving request type ' + request.method + ' for url ' + request.url);
+
+  console.log('Serving request type ' + requestType + ' for url ' + request.url);
 
   // The outgoing status.
 
