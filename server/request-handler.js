@@ -31,6 +31,9 @@ var defaultCorsHeaders = {
 };
 
 var fs = require('fs');
+
+var cache = [];
+
 var requestHandler = function(request, response) {
   // Request and Response come from node's http module.
   //
@@ -40,7 +43,7 @@ var requestHandler = function(request, response) {
   //
   // Documentation for both request and response can be found in the HTTP section at
   // http://nodejs.org/documentation/api/
-
+  //{"username":"Jono","message":"Do my bidding!","objectId":"13"}
   // Do some basic logging.
   //
   // Adding more logging to your server can be an easy way to get passive
@@ -62,30 +65,43 @@ var requestHandler = function(request, response) {
   } else if (requestType === 'GET') {
     statusCode = 200;
     response.writeHead(statusCode, headers);
-    var result;
-    var data = fs.readFileSync('server/input.txt');
-    var obj = {};
-    obj.results = JSON.parse(data.toString());
-    result = JSON.stringify(obj);
-    response.end(result);
+
+    fs.readFile('server/input.txt', function(err, data) {
+      var obj = {};
+      var result = JSON.parse(data.toString());
+      // result = JSON.stringify(obj);
+      obj.results = result;
+      response.end(JSON.stringify(obj));
+    });
+    
   } else if (requestType === 'POST') {
     statusCode = 201;
+    response.writeHead(statusCode, headers);
+
     request.on('data', function(newData) {
-      var oldData = fs.readFileSync('server/input.txt');
-      var oldArray = JSON.parse(oldData.toString());
-      var newObj = JSON.parse(newData.toString());
-      newObj.objectId = oldArray.length.toString();
-      // resultString = oldData.toString().slice(0, -1) + ',' + newData.toString() + ']';
-      oldArray.unshift(newObj);
-      var resultString = JSON.stringify(oldArray);
-      fs.writeFileSync('server/input.txt', resultString);
+      fs.readFile('server/input.txt', function(err, data) {
+        // turn data into a manipulatable format
+        var content = JSON.parse(data.toString());
+        var newContent = JSON.parse(newData.toString());
+        // manipulate the data, i.e. insert the POST newData
+        content.unshift(newContent);
+          // convert the data back into txt format
+          // write the transformed data
+        fs.writeFile('server/input.txt', JSON.stringify(content));
+      });
+    //   var oldArray = JSON.parse(oldData.toString());
+    //   var newObj = JSON.parse(newData.toString());
+    //   newObj.objectId = oldArray.length.toString();
+    //   oldArray.unshift(newObj);
+    //   var resultString = JSON.stringify(oldArray);
+
+
+    //   fs.writeFileSync('server/input.txt', resultString);
     });
     request.on('end', function(data) {
       console.log('ended');
+      response.end('data modifed');
     });
-
-    response.writeHead(statusCode, headers);
-    response.end('123');
   }
 
 
