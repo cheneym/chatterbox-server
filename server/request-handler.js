@@ -76,25 +76,27 @@ var requestHandler = function(request, response) {
     response.writeHead(statusCode, headers);
     var data = {};
     data.results = cache;
-    response.end(JSON.stringify(data));
+    var outdata = JSON.stringify(data);
+    response.end(outdata);
   } else if (requestType === 'POST') {
     statusCode = 201;
     response.writeHead(statusCode, headers);
-
+    var output;
     request.on('data', function(newData) {
       var newContent = JSON.parse(newData.toString());
       cache.unshift(newContent);
-      fs.writeFile('server/input.txt', JSON.stringify(cache)); 
+      output = newData.toString();
+      var outcache = JSON.stringify(cache);
+      fs.writeFile('server/input.txt', outcache); 
     });
 
     request.on('end', function(data) {
       console.log('ended');
-      response.end('data modifed');
+      response.end(output);
     });
   }
 
   console.log('Serving request type ' + request.method + ' for url ' + request.url);
-
   // The outgoing status.
 
   // See the note below about CORS headers.
