@@ -3,6 +3,7 @@
 var express = require('express');
 var cors = require('cors');
 var fs = require('fs');
+var path = require('path');
 
 var app = express();
 app.use(cors());
@@ -29,13 +30,8 @@ fs.readFile('server/input.txt', function(err, messages) {
 
 //--------------Routing--------------
   //------------Route Directory---------
-// app.get('/', function (req, res) {
 
-//   res.send('jkasdjasdk');
-// });
-
-
-
+app.use(express.static(path.resolve('./client')));
 
   //---------URL: /classes/messages-----------------
 app.route('/classes/messages')
@@ -52,7 +48,7 @@ app.route('/classes/messages')
       data = data.toString();
       var incomingMessage = JSON.parse(data);
 
-      _cache.results.push(incomingMessage);
+      _cache.results.unshift(incomingMessage);
 
       fs.writeFile('server/input.txt', JSON.stringify(_cache), function(err, messages) {
         if (err) {
@@ -64,7 +60,7 @@ app.route('/classes/messages')
     });
   });
 
-
+// joe coooooooooooooooooool, also what is a stream? 
 
 //--------------Start Server--------------
 
