@@ -133,7 +133,6 @@ var requestHandler = function(request, response) {
     response.end();
 
   } else if (requestType === 'GET') {
-
     statusCode = 200;
     response.writeHead(statusCode, headers);
     var data = {};
